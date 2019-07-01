@@ -6,7 +6,6 @@ Created on 25 Jun 2019
 import wfdb 
 import pywt
 import matplotlib.pyplot as plt
-from IPython.display import display, Image
 
 
 InputWave, fields = wfdb.rdsamp(record_name='101', sampfrom=2600, sampto=2900, channels = [0], pb_dir='mitdb')

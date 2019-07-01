@@ -12,13 +12,14 @@ def denoise(wave):
     decomposes the beat down to 5 levels
     
     reconstructs the beat using levels 0-4
+    
     --------------
     wave:
         isolated beat from an ECG signal 
+        
     --------------
-    
-    returns:
-        the denoised wavelet, comprised of the decomposed wavlet coefficients
+    Output:
+        the denoised wavelet, comprised of the wavelet coefficients
         of the first 4 levels of decompositions
     '''
     wave_coeffs = pywt.wavedec(data = wave, wavelet = 'db8', level = 5, axis = -1)
