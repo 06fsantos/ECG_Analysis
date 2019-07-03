@@ -5,7 +5,6 @@ Created on 3 Jun 2019
 '''
 import matplotlib.pyplot as plt 
 import wfdb 
-from IPython.display import display, Image
 
 record, fields = wfdb.rdsamp(record_name = '100', sampfrom = 0, channels = [0], pb_dir = 'mitdb')
 annotations = wfdb.rdann(record_name = '100', extension = 'atr', sampfrom = 0, pb_dir = 'mitdb')

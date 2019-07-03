@@ -26,7 +26,3 @@ def denoise(wave):
     reconstructed_wave = pywt.waverec(wave_coeffs[0:4], 'db8')
     
     return reconstructed_wave
-
-
-if __name__ == '__main__':
-    pass

@@ -32,8 +32,6 @@ def separate_beats(signal, annotations):
             
             low_diff = (beat_peak - prev_peak) / 2
             high_diff = (next_peak - beat_peak) / 2
-            print (int(beat_peak - low_diff))
-            print (int(beat_peak + high_diff))
             beat = signal[int(beat_peak - low_diff) : int(beat_peak + high_diff)]
                            
             if sym == 'N':
