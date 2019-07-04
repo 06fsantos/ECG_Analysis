@@ -3,7 +3,7 @@ Created on 1 Jul 2019
 
 @author: filipe
 '''
-import wfdb 
+import denoise_wave
 
 def separate_beats(signal, annotations): 
     '''
@@ -33,41 +33,43 @@ def separate_beats(signal, annotations):
             low_diff = (beat_peak - prev_peak) / 2
             high_diff = (next_peak - beat_peak) / 2
             beat = signal[int(beat_peak - low_diff) : int(beat_peak + high_diff)]
+            
+            denoised_beat = denoise_wave.denoise(beat)
                            
             if sym == 'N':
-                beat_dict["N"].append(beat)
+                beat_dict["N"].append(denoised_beat)
             elif sym == 'L':
-                beat_dict['L'].append(beat)
+                beat_dict['L'].append(denoised_beat)
             elif sym == 'R':
-                beat_dict['R'].append(beat)
+                beat_dict['R'].append(denoised_beat)
             elif sym == 'A':
-                beat_dict['A'].append(beat)
+                beat_dict['A'].append(denoised_beat)
             elif sym == 'a':
-                beat_dict['a'].append(beat)
+                beat_dict['a'].append(denoised_beat)
             elif sym == 'J':
-                beat_dict['J'].append(beat)
+                beat_dict['J'].append(denoised_beat)
             elif sym == 'S':
-                beat_dict['S'].append(beat)
+                beat_dict['S'].append(denoised_beat)
             elif sym == 'V':
-                beat_dict['V'].append(beat)
+                beat_dict['V'].append(denoised_beat)
             elif sym == 'F':
-                beat_dict['F'].append(beat)
+                beat_dict['F'].append(denoised_beat)
             elif sym == '!':
-                beat_dict['!'].append(beat)
+                beat_dict['!'].append(denoised_beat)
             elif sym == 'e':
-                beat_dict['e'].append(beat)
+                beat_dict['e'].append(denoised_beat)
             elif sym == 'J':
-                beat_dict['J'].append(beat)
+                beat_dict['J'].append(denoised_beat)
             elif sym == 'E':
-                beat_dict['E'].append(beat)
+                beat_dict['E'].append(denoised_beat)
             elif sym == 'P':
-                beat_dict['P'].append(beat)
+                beat_dict['P'].append(denoised_beat)
             elif sym == 'f':
-                beat_dict['f'].append(beat)
+                beat_dict['f'].append(denoised_beat)
             elif sym == 'p':
-                beat_dict['p'].append(beat)
+                beat_dict['p'].append(denoised_beat)
             elif sym == 'Q':
-                beat_dict['Q'].append(beat)
+                beat_dict['Q'].append(denoised_beat)
             else:
                 print ('Symbol {} not recognised'.format(sym))
                 

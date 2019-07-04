@@ -3,7 +3,7 @@ Created on 2 Jul 2019
 
 @author: filipe
 '''
-import keras 
+ 
 from keras.models import Sequential 
 from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Activation, Flatten 
 
