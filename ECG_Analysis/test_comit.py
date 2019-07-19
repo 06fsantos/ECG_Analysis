@@ -3,70 +3,79 @@ Created on 3 Jun 2019
 
 @author: filipe
 '''
+
 #import matplotlib.pyplot as plt 
-import wfdb 
-import denoise_wave
+import wfdb
+import separate_beats
 import os
-
-record, fields = wfdb.rdsamp(record_name = '100', sampfrom = 0, channels = [0], pb_dir = 'mitdb')
-annotations = wfdb.rdann(record_name = '100', extension = 'atr', sampfrom = 0, pb_dir = 'mitdb')
-
-beat_dict = {'N': [], 'L':[], 'R':[], 'A':[], 'a':[], 'J':[], 'S':[], 'V':[], 'F':[], 
-             '!':[], 'e':[], 'J':[], 'E':[], 'P':[], 'f':[], 'p':[], 'Q':[]}
+from sklearn.model_selection import train_test_split
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Activation, Flatten, ELU, BatchNormalization
 
 
-for i, sym in enumerate(annotations.symbol):
-    
-    
-    if (i != 0 and i != len(annotations.symbol) - 1):
-        beat_peak = annotations.sample[i]
-        next_peak = annotations.sample[i+1]
-        prev_peak = annotations.sample[i-1]
-        
-        low_diff = (beat_peak - prev_peak) / 2
-        high_diff = (next_peak - beat_peak) / 2
-        beat = record[int(beat_peak - low_diff) : int(beat_peak + high_diff)]
-        
-        denoised_beat = denoise_wave.denoise(beat)
-                       
-        if sym == 'N':
-            beat_dict["N"].append(denoised_beat)
-        elif sym == 'L':
-            beat_dict['L'].append(denoised_beat)
-        elif sym == 'R':
-            beat_dict['R'].append(denoised_beat)
-        elif sym == 'A':
-            beat_dict['A'].append(denoised_beat)
-        elif sym == 'a':
-            beat_dict['a'].append(denoised_beat)
-        elif sym == 'J':
-            beat_dict['J'].append(denoised_beat)
-        elif sym == 'S':
-            beat_dict['S'].append(denoised_beat)
-        elif sym == 'V':
-            beat_dict['V'].append(denoised_beat)
-        elif sym == 'F':
-            beat_dict['F'].append(denoised_beat)
-        elif sym == '!':
-            beat_dict['!'].append(denoised_beat)
-        elif sym == 'e':
-            beat_dict['e'].append(denoised_beat)
-        elif sym == 'J':
-            beat_dict['J'].append(denoised_beat)
-        elif sym == 'E':
-            beat_dict['E'].append(denoised_beat)
-        elif sym == 'P':
-            beat_dict['P'].append(denoised_beat)
-        elif sym == 'f':
-            beat_dict['f'].append(denoised_beat)
-        elif sym == 'p':
-            beat_dict['p'].append(denoised_beat)
-        elif sym == 'Q':
-            beat_dict['Q'].append(denoised_beat)
-print ('----------------------------------')
-print (len(beat_dict['N']))
-print (len(beat_dict['A']))
-print (len(beat_dict['V']))
+record_list = wfdb.get_record_list(db_dir='mitdb', records='all')
+#record_list = ['100', '101', '102', '103', '104', '105', '106', '107', '108', '109', '110', '111', 
+               #'112', '113', '114', '115', '116', '117', '118', '119', '121', '122', '123', '124', 
+               #'200', '201', '202', '203', '205', '207', '208', '209', '210', '212', '213', '214', 
+               #'214', '215', '217', '219', '220', '221', '222', '223', '228', '230', '231', '232', 
+               #'233', '234']
+signals = {}
+
+for i in record_list:
+    record, fields = wfdb.rdsamp(record_name='Data/' + i, sampfrom = 0, channels = [0])
+    annotations = wfdb.rdann(record_name='Data/' + i, extension = 'atr', sampfrom = 0)
+    if i == '100':
+        signals = separate_beats.separate_beats(record, annotations)
+    else:
+        signals = separate_beats.update_beat_dict(record, annotations, signals)
+
+#print(signals.shape())
+x = signals.values()
+y = signals.keys()
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=101)   
+
+num_classes = 17
+epochs = 50
+batch_size = 72
+
+
+model = Sequential()
+
+model.add(Conv2D(filters = 32, kernel_size=(3,3), strides = (1,1), input_shape = (128, 56))) ###### need to work out input shape from data
+model.add(Activation('relu'))
+model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Dropout(0.25))
+
+model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1)))
+model.add(Activation('relu'))
+model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Dropout(0.25))
+
+model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1)))
+model.add(Activation('relu'))
+model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Dropout(0.25))
+
+model.add(Flatten())
+model.add(Dense(1024))
+model.add(Activation('relu'))
+model.add(Dropout(0.25))
+model.add(Dense(num_classes))
+model.add(Activation('relu'))
+
+
+model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(x_test, y_test), shuffle=True)
+scores = model.evaluate(x_test, y_test, verbose=1)
+
+print('Test loss = {}'.format(scores[0]))
+print('Test Accuracy = {}'.format(scores[1]))
 
 if __name__ == '__main__':
     pass
