@@ -9,27 +9,16 @@ import wfdb
 import separate_beats
 import os
 import pandas as pd
+from PIL import Image
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Activation, Flatten, ELU, BatchNormalization
 
+df = pd.read_csv('beat_data.csv', index_col=0)
 
-
-record_list = wfdb.get_record_list(db_dir='mitdb', records='all')
-
-signal_df = pd.DataFrame(columns = ['Beat', 'Class'])
-
-for i in record_list:
-    record, fields = wfdb.rdsamp(record_name='Data/' + i, sampfrom = 0, channels = [0])
-    annotations = wfdb.rdann(record_name='Data/' + i, extension = 'atr', sampfrom = 0)
-    signal_df = separate_beats.update_beats_df(record, annotations, signal_df)
-    print(signal_df.shape)
-
-print('The final shape of the dataframe is {}'.format(signal_df.shape))
-
-print(signal_df['Class'].to_string(index=False))
-
-signal_df.to_csv('beat_data.csv')
+for i in range(10):
+    im = Image.open(df['Beat'][i])
+    im.show()
 '''
 x = signal_df[:,0]
 y = signal_df[:,1]
