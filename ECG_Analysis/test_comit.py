@@ -8,32 +8,34 @@ Created on 3 Jun 2019
 import wfdb
 import separate_beats
 import os
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Activation, Flatten, ELU, BatchNormalization
 
 
+
 record_list = wfdb.get_record_list(db_dir='mitdb', records='all')
-#record_list = ['100', '101', '102', '103', '104', '105', '106', '107', '108', '109', '110', '111', 
-               #'112', '113', '114', '115', '116', '117', '118', '119', '121', '122', '123', '124', 
-               #'200', '201', '202', '203', '205', '207', '208', '209', '210', '212', '213', '214', 
-               #'214', '215', '217', '219', '220', '221', '222', '223', '228', '230', '231', '232', 
-               #'233', '234']
-signals = {}
+
+signal_df = pd.DataFrame(columns = ['Beat', 'Class'])
 
 for i in record_list:
     record, fields = wfdb.rdsamp(record_name='Data/' + i, sampfrom = 0, channels = [0])
     annotations = wfdb.rdann(record_name='Data/' + i, extension = 'atr', sampfrom = 0)
-    if i == '100':
-        signals = separate_beats.separate_beats(record, annotations)
-    else:
-        signals = separate_beats.update_beat_dict(record, annotations, signals)
+    signal_df = separate_beats.update_beats_df(record, annotations, signal_df)
+    print(signal_df.shape)
 
-#print(signals.shape())
-x = signals.values()
-y = signals.keys()
+print('The final shape of the dataframe is {}'.format(signal_df.shape))
+
+print(signal_df['Class'].to_string(index=False))
+
+signal_df.to_csv('beat_data.csv')
+'''
+x = signal_df[:,0]
+y = signal_df[:,1]
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=101)   
+
 
 num_classes = 17
 epochs = 50
@@ -76,6 +78,29 @@ scores = model.evaluate(x_test, y_test, verbose=1)
 
 print('Test loss = {}'.format(scores[0]))
 print('Test Accuracy = {}'.format(scores[1]))
+'''
+'''
 
+
+import wfdb 
+import pywt
+import matplotlib.pyplot as plt
+
+
+InputWave, fields = wfdb.rdsamp(record_name='101', sampfrom=2600, sampto=2900, channels = [0], pb_dir='mitdb')
+wavelet = pywt.Wavelet('db8')
+
+wave_coeffs = pywt.wavedec(data = InputWave, wavelet = wavelet, level = 5, axis = -1)
+reconstructed_wave = pywt.waverec(wave_coeffs[0:4], 'db8')
+
+fig = plt.figure(frameon=False)
+
+plt.axis('off')
+ax = fig.add_subplot(111)
+ax.plot(reconstructed_wave)
+plt.savefig('figure.jpg', bbox_inches='tight')
+plt.show()
+
+'''
 if __name__ == '__main__':
     pass
