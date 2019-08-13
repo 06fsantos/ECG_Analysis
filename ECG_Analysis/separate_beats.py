@@ -26,8 +26,6 @@ def update_beats_df(signal, annotations, beat_df):
     Output:
         beat_dict --> the dictionary containing the isolated beats from each signal 
     '''
-    fig = plt.figure(frameon=False)
-    plt.axis('off')
     
     for i, sym in enumerate(annotations.symbol):
         
@@ -45,19 +43,13 @@ def update_beats_df(signal, annotations, beat_df):
                 next_peak = annotations.sample[i+1]
                 prev_peak = annotations.sample[i-1]
                 
-                low_diff = (beat_peak - prev_peak) / 2
-                high_diff = (next_peak - beat_peak) / 2
-                beat = signal[int(beat_peak - low_diff) : int(beat_peak + high_diff)]
+                low_diff = (beat_peak - prev_peak)
+                high_diff = (next_peak - beat_peak)
+                
+                beat = signal[int(beat_peak - 180) : int(beat_peak + 180)]
                 
                 denoised_beat = denoise_wave.denoise(beat)
-    
-                ax = fig.add_subplot(111)
-                ax.plot(denoised_beat)
-                plt.savefig('figure.jpg', bbox_inches='tight')
-                plt.clf()
                 
-                beat_image = Image.open('figure.jpg').convert('L')
-                
-                beat_df = beat_df.append({'Beat':beat_image, 'Class':sym}, ignore_index=True)
-    plt.close()        
+                beat_df = beat_df.append({'Beat':denoised_beat, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Class':sym}, ignore_index=True)
+       
     return beat_df
