@@ -21,9 +21,11 @@ ax[0].plot(InputWave)
 for i, wavelet in enumerate(wave_coeffs):
     ax[i+1].plot(wavelet)
     
+    
 fig2, ax2 = plt.subplots()
 ax2.plot(pywt.waverec(wave_coeffs[0:4], 'db8'), 'r')
 ax2.plot(InputWave, 'b')
+
 
 plt.show()
 
