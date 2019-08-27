@@ -52,5 +52,4 @@ model.add(Dropout(0.25))
 model.add(Dense(num_classes))
 model.add(Activation('relu'))
 
-
-
+#model.save(filename)
