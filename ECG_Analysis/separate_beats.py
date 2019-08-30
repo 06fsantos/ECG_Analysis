@@ -5,6 +5,7 @@ Created on 1 Jul 2019
 '''
 import denoise_wave
 import pandas as pd
+import numpy as np
 
 def binary_update_beats_df(signal, annotations, beat_df):
     '''
@@ -45,7 +46,10 @@ def binary_update_beats_df(signal, annotations, beat_df):
             
             denoised_beat = denoise_wave.denoise(beat)
             
-            beat_df = beat_df.append({'Beat':denoised_beat, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Class':sym}, ignore_index=True)
+            #denoised_beat = np.asarray(denoised_beat, dtype=np.float32)
+            denoised_beat = denoised_beat.flatten()
+            
+            beat_df = beat_df.append({ 'Class':sym, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Beat':denoised_beat}, ignore_index=True)
    
     return beat_df
 
@@ -91,6 +95,8 @@ def update_beats_df(signal, annotations, beat_df):
                 print(beat)
                 
                 denoised_beat = denoise_wave.denoise(beat)
+                
+                denoised_beat = np.asarray(denoised_beat, dtype=np.float32)
                 
                 beat_df = beat_df.append({'Beat':denoised_beat, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Class':sym}, ignore_index=True)
        

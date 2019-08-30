@@ -8,25 +8,72 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
-from keras.layers import Conv1D, MaxPooling1D, Dense, Dropout, Activation, LeakyReLU, Flatten
+from keras.layers import Conv1D, MaxPooling1D, Dense, Dropout, Activation, LeakyReLU, Flatten, Reshape
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 
 
 
 if __name__ == '__main__':
-    signal_df = pd.read_json('binary_beat_data.json')
+    
+    data = [[0, 240, 238, [1,1,1,1,1,1,1,1,1,1,1,1,1,1]], [1, 224, 225, [1,1,1,1,1,1,1,1,1,1,1,1,1,1]], [0, 225, 239, [1,1,1,1,1,1,1,1,1,1,1,1,1,1]], [1, 239, 241, [1,1,1,1,1,1,1,1,1,1,1,1,1,1]]] 
+    columns = ['Class', 'D1', 'D2', 'Beat']
+    df = pd.DataFrame(data, columns=columns, index = None)
+    
+    for i in range(14):
+        col_name = 'amp{}'.format(i)
+        columns.append(col_name)
+        df[col_name] = np.nan
+    
+    row_count = 0
+    for beat in df['Beat']:
+        amp_count = 0
+        print (beat)
+        for amp in beat:
+            print (amp)
+            col = 'amp{}'.format(amp_count)
+            df[col][row_count] = amp
+            amp_count += 1
+        row_count += 1
+    
+    df = df.drop('Beat', axis=1)
+    print (columns)
+        
+    x = df.as_matrix(columns=df.columns[1:])
+    y = df.as_matrix(columns=df.columns[:1])
+    print (df.head())
+    print (x)
+    print (y)
+
+    
+    model = Sequential()
+    model.add(Dense(12, input_dim=16, activation = 'relu'))
+    model.add(Dense(8, activation = 'relu'))
+    model.add(Dense(1, activation = 'sigmoid'))
+    
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(x, y, epochs = 5, batch_size=2)
+    
+    _, accuracy = model.evaluate(x, y)
+    print ('Accuracy: {}'.format(accuracy))
+
+    '''
+    #signal_df = pd.read_json('binary_beat_data.json')
     #signal_df = pd.read_csv('binary_beat_data.csv', index_col=0)
+    signal_df = pd.read_pickle('binary_beat_data.pkl')
     
     print (signal_df.shape)
     print (signal_df.head())
     print (signal_df.dtypes)
+    print (signal_df.iloc[0,0].shape)
+    print (signal_df.iloc[0,0])
     
-    x = signal_df.iloc[:,:3]
-    x['Beat'].tolist()
+    x = signal_df.iloc[:,0:3]
     y = signal_df.iloc[:,3]
     
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=101)   
+    print (y)
+    
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=101, shuffle = True)   
     
     num_classes = 2
     epochs = 50
@@ -66,10 +113,10 @@ if __name__ == '__main__':
     model.add(Dropout(0.25))
     
     model.add(Flatten())
-    model.add(Dense(1024))
+    model.add(Dense(512))
     model.add(LeakyReLU(alpha=0.3))
     model.add(Dropout(0.25))
-    model.add(Dense(num_classes))
+    model.add(Dense(units=num_classes))
     model.add(Activation('softmax'))
     
     
@@ -81,5 +128,5 @@ if __name__ == '__main__':
     
     print('Test loss = {}'.format(scores[0]))
     print('Test Accuracy = {}'.format(scores[1]))
-
+    '''
     
