@@ -17,6 +17,7 @@ if __name__ == '__main__':
     signal_df = pd.DataFrame(columns = columns)
     
     for i in record_list:
+        print (i)
         record, fields = wfdb.rdsamp(record_name='Data/' + i, sampfrom = 0, channels = [0])
         annotations = wfdb.rdann(record_name='Data/' + i, extension = 'atr', sampfrom = 0)
         signal_df = separate_beats.binary_update_beats_df(record, annotations, signal_df)
