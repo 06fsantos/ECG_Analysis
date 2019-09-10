@@ -7,8 +7,9 @@ import wfdb
 import pywt
 import matplotlib.pyplot as plt
 
+plt.style.use('ggplot')
 
-InputWave, fields = wfdb.rdsamp(record_name='101', sampfrom=2600, sampto=2900, channels = [0], pb_dir='mitdb')
+InputWave, fields = wfdb.rdsamp(record_name='101', sampfrom=2482, sampto=2842, channels = [0], pb_dir='mitdb')
 wavelet = pywt.Wavelet('db8')
 
 wave_coeffs = pywt.wavedec(data = InputWave, wavelet = wavelet, level = 5, axis = -1)
@@ -23,8 +24,11 @@ for i, wavelet in enumerate(wave_coeffs):
     
     
 fig2, ax2 = plt.subplots()
-ax2.plot(pywt.waverec(wave_coeffs[0:4], 'db8'), 'r')
-ax2.plot(InputWave, 'b')
+reconstructed_wave = ax2.plot(pywt.waverec(wave_coeffs[0:4], 'db8'), 'r')
+input_beat = ax2.plot(InputWave, 'b')
+ax2.legend((reconstructed_wave[0], input_beat[0]), ('Denoised ECG Beat', 'Original ECG Beat'), facecolor='white', fancybox=True, shadow=True)
+ax2.set_xlabel('Temporal Axis')
+ax2.set_ylabel('Amplitude (mV)')
 
 
 plt.show()
