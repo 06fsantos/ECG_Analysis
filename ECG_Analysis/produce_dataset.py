@@ -15,14 +15,18 @@ if __name__ == '__main__':
     record_list = wfdb.get_record_list(db_dir='mitdb', records='all')
     columns = ['Class', 'Distance to Previous Beat', 'Distance to Next Beat', 'Beat']
     signal_df = pd.DataFrame(columns = columns)
-    
+    '''
     for i in record_list:
         print (i)
         record, fields = wfdb.rdsamp(record_name='Data/' + i, sampfrom = 0, channels = [0])
         annotations = wfdb.rdann(record_name='Data/' + i, extension = 'atr', sampfrom = 0)
-        signal_df = separate_beats.binary_update_beats_df(record, annotations, signal_df)
+        signal_df = separate_beats.aha_update_beats_df(record, annotations, signal_df)
     
     print (signal_df.head())
+    '''
+    record, fields = wfdb.rdsamp(record_name='Data/101', sampfrom = 0, channels = [0])
+    annotations = wfdb.rdann(record_name='Data/101', extension = 'atr', sampfrom = 0)
+    signal_df = separate_beats.binary_update_beats_df(record, annotations, signal_df)
     
     for i in range(len(signal_df['Beat'][0])):
         col_name = 'amp{}'.format(i)
@@ -44,5 +48,6 @@ if __name__ == '__main__':
     signal_df["Distance to Next Beat"] = pd.to_numeric(signal_df["Distance to Next Beat"])
     signal_df["Class"] = pd.to_numeric(signal_df["Class"])
     signal_df = signal_df.drop('Beat', axis=1)
+    signal_df = signal_df.dropna(axis=0)
     print (signal_df.dtypes)
-    signal_df.to_pickle('binary_beat_data.pkl')
+    signal_df.to_pickle('sample_binary_beat_data.pkl')

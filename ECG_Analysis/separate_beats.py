@@ -48,12 +48,13 @@ def binary_update_beats_df(signal, annotations, beat_df):
             
             #denoised_beat = np.asarray(denoised_beat, dtype=np.float32)
             denoised_beat = denoised_beat.flatten()
+            print(denoised_beat.shape)
             
             beat_df = beat_df.append({ 'Class':sym, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Beat':denoised_beat}, ignore_index=True)
    
     return beat_df
 
-def update_beats_df(signal, annotations, beat_df):
+def aha_update_beats_df(signal, annotations, beat_df):
     '''
     this method will take in an annotated ECG signal for the training/test data and isolate each beat 
     each beat will be isolated by taking half the distance to the subsequent and preceding beats 
@@ -79,9 +80,28 @@ def update_beats_df(signal, annotations, beat_df):
         if sym == "x":
             sym = "p"
         
-        if sym == 'N' or sym == 'L' or sym == 'R' or sym == 'A' or sym == 'a' or sym == 'J' or sym == 'S' or sym == 'V' \
-        or sym == 'F' or sym == '!' or sym == 'e' or sym == 'J' or sym == 'E' or sym == 'P' or sym == 'f' or sym == 'p' \
-        or sym == 'Q': 
+        if sym == 'N' or sym == 'L' or sym == 'R' or sym == 'A' or sym == 'a' or sym == 'J' or sym == 'S' or sym == 'e' or sym == 'J':
+            sym = 'N'
+            
+        if sym == 'V':
+            sym = 'V'
+            
+        if  sym == 'F' or sym == 'f':
+            sym = 'F'
+        
+        if sym == '!' or sym == 'p':
+            sym = 'O'
+            
+        if sym == 'E':
+            sym = 'E'
+            
+        if sym == 'P':
+            sym = 'P'
+        
+        if sym == 'Q':
+            sym = 'Q'
+        
+        if sym == 0 or sym == 1 or sym == 2 or sym == 3 or sym == 4 or sym == 5 or sym == 6: 
             if (i > 1 and i != len(annotations.symbol) - 1):
                 beat_peak = annotations.sample[i]
                 next_peak = annotations.sample[i+1]
@@ -92,12 +112,11 @@ def update_beats_df(signal, annotations, beat_df):
                 
                 beat = signal[int(beat_peak - 180) : int(beat_peak + 180)]
                 
-                print(beat)
-                
                 denoised_beat = denoise_wave.denoise(beat)
                 
-                denoised_beat = np.asarray(denoised_beat, dtype=np.float32)
+                #denoised_beat = np.asarray(denoised_beat, dtype=np.float32)
+                denoised_beat = denoised_beat.flatten()
                 
-                beat_df = beat_df.append({'Beat':denoised_beat, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Class':sym}, ignore_index=True)
+                beat_df = beat_df.append({ 'Class':sym, 'Distance to Previous Beat':low_diff, 'Distance to Next Beat':high_diff, 'Beat':denoised_beat}, ignore_index=True)
        
     return beat_df
