@@ -12,10 +12,15 @@ from wfdb.processing import xqrs_detect
 from keras.models import load_model
 
 
-model = load_model('my_model.h5')
-
-
 if __name__ == '__main__':
+    normal = []
+    abnormal = []
+    beat_indices = []
+    
+    predict_beat_dict = {'Normal Beats':normal, 'Abnormal Beats':abnormal}
+    
+    model = load_model('my_model.h5')
+
     columns = ['Distance to Previous Beat', 'Distance to Next Beat', 'Beat']
     signal_df = pd.DataFrame(columns = columns)
     
@@ -23,16 +28,17 @@ if __name__ == '__main__':
     
     record, fields = wfdb.rdsamp(record_name='Data/101', sampfrom = 0, channels = [0])
     annotations = wfdb.rdann(record_name='Data/101', extension = 'atr', sampfrom = 0)
-    print(len(annotations.sample))
+    
     #locate R peaks
     qrs_inds = xqrs_detect(record[:,0], fs=fields['fs'])
-    print(len(qrs_inds))
+    
     for i, peak in enumerate(qrs_inds):
         if i > 1 and i != len(qrs_inds)-1:
             beat_peak = qrs_inds[i]
             next_peak = qrs_inds[i+1]
             prev_peak = qrs_inds[i-1]
             
+            beat_indices.append(beat_peak)
             
             low_diff = beat_peak - prev_peak
             high_diff = next_peak - beat_peak
@@ -65,7 +71,33 @@ if __name__ == '__main__':
     signal_df = signal_df.dropna(axis=0)
     
     signal_array = signal_df.to_numpy()
+    print(signal_array.shape)
+    signal_array = np.expand_dims(signal_array, axis=2)
+    print(signal_array.shape)
     
     pred_classes = model.predict_classes(signal_array, batch_size=24, verbose=0)
     print (pred_classes)
+    print (pred_classes.shape)
+    
+    count = 0
+    for pred in pred_classes:
+        if pred == 0:
+            normal.append(beat_indices[count])
+            count += 1
+        elif pred == 1:
+            abnormal.append(beat_indices[count])
+            count += 1
+        else:
+            print('unidentified class for Beat index {}'.format(i))
+    
+    total = len(normal) + len(abnormal)
+    percent_normal = (len(normal) / total) * 100 
+    percent_abnormal = (len(abnormal) / total) * 100
+    
+    print(percent_normal)
+    print(percent_abnormal)
+    print(abnormal)
+    
+    
+    
     
