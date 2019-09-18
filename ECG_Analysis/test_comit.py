@@ -19,6 +19,14 @@ if __name__ == '__main__':
     
     predict_beat_dict = {'Normal Beats':normal, 'Abnormal Beats':abnormal}
     
+    normal.append(323)
+    normal.append(624)
+    abnormal.append(972)
+    abnormal.append(1102)
+    
+    print(len(predict_beat_dict['Abnormal Beats']))
+    print(len(predict_beat_dict['Normal Beats']))
+    
     model = load_model('my_model.h5')
 
     columns = ['Distance to Previous Beat', 'Distance to Next Beat', 'Beat']
@@ -26,12 +34,13 @@ if __name__ == '__main__':
     
     sample_rate = 360
     
-    record, fields = wfdb.rdsamp(record_name='Data/101', sampfrom = 0, channels = [0])
-    annotations = wfdb.rdann(record_name='Data/101', extension = 'atr', sampfrom = 0)
+    record, fields = wfdb.rdsamp(record_name='uploads/101', sampfrom = 0, channels = [0])
+    #annotations = wfdb.rdann(record_name='Data/101', extension = 'atr', sampfrom = 0)
     
     #locate R peaks
-    qrs_inds = xqrs_detect(record[:,0], fs=fields['fs'])
-    
+    qrs_inds = xqrs_detect(record[:,0], fs=sample_rate)
+    print(fields['fs'])
+    print('-----------------------------')
     for i, peak in enumerate(qrs_inds):
         if i > 1 and i != len(qrs_inds)-1:
             beat_peak = qrs_inds[i]
@@ -98,6 +107,6 @@ if __name__ == '__main__':
     print(percent_abnormal)
     print(abnormal)
     
-    
+
     
     

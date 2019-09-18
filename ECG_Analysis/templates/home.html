@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ECG Beat Classifier</title>
+		<style>
+			h1, h2 {
+				color: darkred;
+				text-align: center
+			}
+			form {
+				text-align: center
+			}
+		</style>
+	</head>
+	<body>
+		<!--img src="image.jpg" width = "100%"-->
+		<!--the line above will provide an image the width of the page-->
+		<h1>Electrocardiogram Beat Classifier</h1>
+		<h2>Classifying your electrocardiogram beats has never been easier</h2>
+
+		<p>
+			A purpose built convolutional neural network will be used to individually analyse and classify every beat in your ECG recording and will provide you with a clear, consise output describing the types of heart beat present in your ECG signal. 
+		</p>
+		<p>
+			Using our ECG beat classifier is as easy as 1, 2, 3:
+		</p>
+		<ol>
+			<li>Upload your ECG signal.</li>
+			<li>Click the classify button.</li>
+			<li>Sit back, relax and let our neural network do the one thing it was designed to do.</li>
+		</ol>
+
+		<form action="/results" method="post" enctype="multipart/form-data"> 
+
+			<div>
+				<p> Please enter the sampling rate for the ECG signal <input type="number" name="rate"></p>
+			</div> 
+			<label>Select Signal File</label>	
+			<input type="file" name="signal">
+			<label>Select Header File</label>
+			<input type="file" name="header">
+			<button type="submit" class="btn btn-primary">Submit Signal</button>
+		</form>
+
+
+	</body>
+</html>	

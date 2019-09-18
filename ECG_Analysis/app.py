@@ -3,47 +3,52 @@ Created on 18 Jul 2019
 
 @author: filipe
 '''
+import os
 import numpy as np
 import pandas as pd
-
-import matplotlib.pyplot as plt
 import denoise_wave
 import wfdb
 from wfdb.processing import xqrs_detect
-
 from flask import Flask 
 from flask import render_template, request, redirect
-
 from keras.models import load_model
 
-plt.style.use('ggplot')
 app = Flask(__name__)
 
-### load the model 
-
+# load the model 
 model = load_model('my_model.h5')
-model.make_predict_function()
+model._make_predict_function()
 
 
-def classify_beats(signal, model, sampling_rate):
+def classify_beats(signal_file, model, sampling_rate):
+    '''
+    method predicts the classes of all beats in an ECG signal 
     
+    --------------------
+    Input:
+        signal --> the input data in the form of an ECG signal from physionet
+        
+        model --> the trained and saved neural network used for classification 
+        
+        sampling rate --> the sampling frequency of the ECG signal
+    -------------------
+    Output:
+        predict_beat_dict --> a dictionary containing the locations of each beat classified as normal or abnormal 
+    '''
+
     normal = []
     abnormal = []
     beat_indices = []
     
     predict_beat_dict = {'Normal Beats':normal, 'Abnormal Beats':abnormal}
-    
-    model = load_model('my_model.h5')
 
     columns = ['Distance to Previous Beat', 'Distance to Next Beat', 'Beat']
     signal_df = pd.DataFrame(columns = columns)
     
-    sample_rate = sampling_rate
-    
-    record, fields = wfdb.rdsamp(record_name=signal, sampfrom = 0, channels = [0])
+    record, fields = wfdb.rdsamp(record_name=signal_file, sampfrom = 0, channels = [0])
     
     #locate R peaks
-    qrs_inds = xqrs_detect(record[:,0], fs=fields['fs'])
+    qrs_inds = xqrs_detect(record[:,0], fs=sampling_rate)
     
     for i, peak in enumerate(qrs_inds):
         if i > 1 and i != len(qrs_inds)-1:
@@ -56,7 +61,7 @@ def classify_beats(signal, model, sampling_rate):
             low_diff = beat_peak - prev_peak
             high_diff = next_peak - beat_peak
             
-            beat = record[int(beat_peak - (sample_rate/2)) : int(beat_peak + (sample_rate/2))]
+            beat = record[int(beat_peak - (sampling_rate/2)) : int(beat_peak + (sampling_rate/2))]
             
             denoised_beat = denoise_wave.denoise(beat)
             denoised_beat = denoised_beat.flatten()
@@ -102,30 +107,53 @@ def classify_beats(signal, model, sampling_rate):
             count += 1
         else:
             print('unidentified class for Beat index {}'.format(i))
-    '''
-    total = len(normal) + len(abnormal)
-    percent_normal = (len(normal) / total) * 100 
-    percent_abnormal = (len(abnormal) / total) * 100
-    '''
+
     return predict_beat_dict
- 
 
 @app.route("/")
 def index():
     return render_template("home.html")
 
+app.config['SIGNAL_UPLOADS'] = "/Users/filipe/git/ecg_analysis/ecg_analysis/uploads/"
+app.config['ALLOWED_FILE_EXTENSIONS'] = ['DAT']
 
-@app.route("/beat_results", methods = ['POST'])
+@app.route("/results", methods = ['GET', 'POST'])
 def results():
-    if request.method == 'POST':
-        signal = request.files['file']
-        sample_rate = request.form.get('rate')
-        
-        predicted_beats = classify_beats(model, signal, sample_rate)
-                
-        return render_template('beat_results.html')
     
-    return None
+    if request.method == 'POST':
+        
+        if request.files:
+            
+            signal = request.files['signal']
+            header = request.files['header']
+            sample_rate = int(request.form.get('rate'))
+            
+            print (type(sample_rate))
+            
+            if '.dat' not in signal.filename:
+                print('The signal is not in the correct format, please use a .dat file')
+                return redirect(request.url)
+            else:
+                filename = signal.filename[:-4]
+                
+            if '.hea' not in header.filename:
+                print('The header file is not in the correct format, please use a .hea file')
+                return redirect(request.url)
+            
+            signal.save(os.path.join(app.config['SIGNAL_UPLOADS'], signal.filename))
+            header.save(os.path.join(app.config['SIGNAL_UPLOADS'], header.filename))
+            print(filename)
+            print('-------------- IMAGE SAVED ----------------')
+            
+            predicted_beats = classify_beats('uploads/' + filename, model, sample_rate)
+            
+            total = len(predicted_beats['Normal Beats']) + len(predicted_beats['Abnormal Beats'])
+            percent_normal = (len(predicted_beats['Normal Beats'])/total) * 100
+            percent_abnormal = (len(predicted_beats['Abnormal Beats'])/total) * 100
+            
+            return render_template('results.html', percent_normal=percent_normal, percent_abnormal=percent_abnormal, abnormal_beats=predicted_beats['Abnormal Beats'])
+    
+    return redirect(request.url)
 
 if __name__ == "__main__":
-    pass 
+    app.run()
