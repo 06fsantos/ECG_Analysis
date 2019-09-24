@@ -24,7 +24,7 @@ flatten layer flattens the input without affecting batch size
 
 model = Sequential()
 
-model.add(Conv2D(filters = 32, kernel_size=(3,3), strides = (1,1), input_shape = (128, 56))) ###### need to work out input shape from data
+model.add(Conv2D(filters = 32, kernel_size=(3,3), strides = (1,1), input_shape = (128, 56)))
 model.add(Activation('relu'))
 model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1)))
 model.add(Activation('relu'))

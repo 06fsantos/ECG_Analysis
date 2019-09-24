@@ -89,13 +89,9 @@ def classify_beats(signal_file, model, sampling_rate):
     signal_df = signal_df.dropna(axis=0)
     
     signal_array = signal_df.to_numpy()
-    print(signal_array.shape)
     signal_array = np.expand_dims(signal_array, axis=2)
-    print(signal_array.shape)
     
     pred_classes = model.predict_classes(signal_array, batch_size=24, verbose=0)
-    print (pred_classes)
-    print (pred_classes.shape)
     
     count = 0
     for pred in pred_classes:

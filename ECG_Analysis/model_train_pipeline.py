@@ -52,7 +52,7 @@ if __name__ == '__main__':
     print(y_test_binary.shape)
     print (y_test)
     print (y_test_binary)
-    '''
+    
     model = Sequential()
     
     model.add(Conv1D(filters = 32, kernel_size=3, strides = 1, input_shape =(x_train.shape[1], x_train.shape[2])))
@@ -136,5 +136,5 @@ if __name__ == '__main__':
     ax2.legend((train_loss[0], val_loss[0]), ('Training Loss', 'Validation Loss'), facecolor='white', fancybox=True, shadow=True)
     
     plt.show()
-    '''
+    
     
